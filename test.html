@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Fetching Data from Localhost</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      table td,
+      table th {
+        border: 1px solid black;
+        padding: 8px;
+      }
+
+      table th {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Music Data</h1>
+    <table id="music-table">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Package Name</th>
+          <th>Release Date</th>
+          <th>Audio</th>
+          <th>Price</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="music-table-body"></tbody>
+    </table>
+    <div id="confirmModal" style="display: none">
+      <div id="confirmModalContent">
+        <h2>Confirmation</h2>
+        <p>Are you sure you want to delete this music?</p>
+        <button id="confirmDeleteButton">Delete</button>
+        <button id="cancelDeleteButton">Cancel</button>
+      </div>
+    </div>
+    <div id="edit-modal" style="display: none">
+      <h2>Edit Music</h2>
+      <form id="edit-form">
+        <label for="edit-package-name">Package Name:</label>
+        <input
+          type="text"
+          id="edit-package-name"
+          name="edit-package-name"
+        /><br /><br />
+        <label for="edit-artist_name">Artist Name:</label>
+        <input
+          type="text"
+          id="edit-artist_name"
+          name="edit-artist_name"
+        /><br /><br />
+        <label for="edit-release-date">Release Date:</label>
+        <input
+          type="text"
+          id="edit-release-date"
+          name="edit-release-date"
+        /><br /><br />
+        <label for="edit-price">Price:</label>
+        <input type="text" id="edit-price" name="edit-price" /><br /><br />
+        <button id="edit-submit-button" type="button">Save Changes</button>
+        <button id="cancelEditButton">Cancel</button>
+      </form>
+    </div>
+    <script>
+      // Mengambil data dari localhost
+      fetch("http://localhost:3000/music")
+        .then((response) => response.json())
+        .then((data) => {
+          const musicTableBody = document.getElementById("music-table-body");
+          let count = 1;
+
+          data.data.forEach((item) => {
+            const row = document.createElement("tr");
+
+            const noCell = document.createElement("td");
+            noCell.textContent = count++;
+            row.appendChild(noCell);
+
+            const packageNameCell = document.createElement("td");
+            const image = document.createElement("img");
+            image.src = `images/${item.image_url}`;
+            image.style.maxWidth = "100px";
+            image.style.maxHeight = "100px";
+            packageNameCell.appendChild(image);
+            packageNameCell.appendChild(document.createElement("br"));
+            packageNameCell.appendChild(
+              document.createTextNode(item.package_name)
+            );
+            row.appendChild(packageNameCell);
+
+            const releaseDateCell = document.createElement("td");
+            const releaseDate = new Date(
+              item.release_date
+            ).toLocaleDateString();
+            releaseDateCell.textContent = releaseDate;
+            row.appendChild(releaseDateCell);
+
+            const audioCell = document.createElement("td");
+            const audio = document.createElement("audio");
+            audio.src = item.sample_url;
+            audio.controls = true;
+            audioCell.appendChild(audio);
+            row.appendChild(audioCell);
+
+            const priceCell = document.createElement("td");
+            priceCell.textContent = item.price;
+            row.appendChild(priceCell);
+
+            const actionCell = document.createElement("td");
+            const editButton = document.createElement("button");
+            editButton.textContent = "Edit";
+            editButton.addEventListener("click", () => {
+              showEditModal(item);
+            });
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Delete";
+
+            actionCell.appendChild(editButton);
+
+            deleteButton.addEventListener("click", () => {
+              openConfirmModal(item.id);
+            });
+            actionCell.appendChild(deleteButton);
+            row.appendChild(actionCell);
+
+            musicTableBody.appendChild(row);
+          });
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+
+      function openConfirmModal(id) {
+        const confirmModal = document.getElementById("confirmModal");
+        const confirmDeleteButton = document.getElementById(
+          "confirmDeleteButton"
+        );
+        const cancelDeleteButton =
+          document.getElementById("cancelDeleteButton");
+
+        confirmDeleteButton.addEventListener("click", () => {
+          deleteMusic(id);
+          confirmModal.style.display = "none";
+        });
+
+        cancelDeleteButton.addEventListener("click", () => {
+          confirmModal.style.display = "none";
+        });
+
+        confirmModal.style.display = "block";
+      }
+      function deleteMusic(id) {
+        console.log("Deleting music with ID:", id);
+        fetch(`http://localhost:3000/music/${id}`, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            if (response.ok) {
+              console.log("Music deleted successfully");
+              // Refresh the page or update the table as needed
+              window.location.reload();
+            } else {
+              console.error("Failed to delete music");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+      const editModal = document.getElementById("edit-modal");
+      const editForm = document.getElementById("edit-form");
+      const editPackageNameInput = document.getElementById("edit-package-name");
+      const editArtistNameInput = document.getElementById("edit-artist_name");
+      const editReleaseDateInput = document.getElementById("edit-release-date");
+      const editPriceInput = document.getElementById("edit-price");
+      const editSubmitButton = document.getElementById("edit-submit-button");
+
+      function showEditModal(item) {
+        editItemId = item.id;
+        editPackageNameInput.value = item.package_name;
+        editArtistNameInput.value = item.artist_name;
+        editPriceInput.value = item.price;
+        editReleaseDateInput.value = new Date(
+          item.release_date
+        ).toLocaleDateString();
+        editModal.style.display = "block";
+      }
+
+      editSubmitButton.addEventListener("click", () => {
+        const updatedData = {
+          package_name: editPackageNameInput.value,
+          artist_name: editArtistNameInput.value,
+          release_date: editReleaseDateInput.value,
+          price: editPriceInput.value,
+        };
+        editMusic(editItemId, updatedData);
+      });
+
+      function editMusic(id, data) {
+        console.log("Editing music with ID:", id);
+        console.log(data);
+        fetch(`http://localhost:3000/music/${id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => {
+            if (response.ok) {
+              console.log("Music updated successfully");
+              editModal.style.display = "none";
+              window.location.reload();
+            } else {
+              console.error("Failed to update music");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+
+      cancelEditButton.addEventListener("click", () => {
+        editModal.style.display = "none";
+      });
+    </script>
+  </body>
+</html>

@@ -1,236 +1,554 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Fetching Data from Localhost</title>
-    <style>
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      table td,
-      table th {
-        border: 1px solid black;
-        padding: 8px;
-      }
-
-      table th {
-        background-color: #f2f2f2;
-      }
-    </style>
+    <title>Contoh HTML dengan Bootstrap</title>
+    <!-- Mengimpor file CSS Bootstrap -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
+    />
   </head>
   <body>
-    <h1>Music Data</h1>
-    <table id="music-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Package Name</th>
-          <th>Release Date</th>
-          <th>Audio</th>
-          <th>Price</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="music-table-body"></tbody>
-    </table>
-    <div id="confirmModal" style="display: none">
-      <div id="confirmModalContent">
-        <h2>Confirmation</h2>
-        <p>Are you sure you want to delete this music?</p>
-        <button id="confirmDeleteButton">Delete</button>
-        <button id="cancelDeleteButton">Cancel</button>
+    <div class="container">
+      <h1>Music</h1>
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#addSongModal"
+      >
+        Add
+      </button>
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="addSongModal"
+      tabindex="-1"
+      aria-labelledby="addSongModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addSongModalLabel">Add Song</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="songTitle" class="form-label">Title</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="songTitle"
+                  placeholder="Enter song title"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="artist" class="form-label">Artist</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="artist"
+                  placeholder="Enter artist name"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="price" class="form-label">Price</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="price"
+                  placeholder="Enter price"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="releaseDate" class="form-label">Release Date</label>
+                <input type="date" class="form-control" id="releaseDate" />
+              </div>
+              <div class="mb-3">
+                <label for="mp3File" class="form-label">Upload MP3 File</label>
+                <input type="file" class="form-control" id="mp3File" />
+              </div>
+              <div class="mb-3">
+                <label for="imageFile" class="form-label">Upload Image</label>
+                <input type="file" class="form-control" id="imageFile" />
+              </div>
+              <button type="submit" class="btn btn-primary">Add Song</button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
-    <div id="edit-modal" style="display: none">
-      <h2>Edit Music</h2>
-      <form id="edit-form">
-        <label for="edit-package-name">Package Name:</label>
-        <input
-          type="text"
-          id="edit-package-name"
-          name="edit-package-name"
-        /><br /><br />
-        <label for="edit-artist_name">Artist Name:</label>
-        <input
-          type="text"
-          id="edit-artist_name"
-          name="edit-artist_name"
-        /><br /><br />
-        <label for="edit-release-date">Release Date:</label>
-        <input
-          type="text"
-          id="edit-release-date"
-          name="edit-release-date"
-        /><br /><br />
-        <label for="edit-price">Price:</label>
-        <input type="text" id="edit-price" name="edit-price" /><br /><br />
-        <button id="edit-submit-button" type="button">Save Changes</button>
-        <button id="cancelEditButton">Cancel</button>
-      </form>
-    </div>
+    <!-- Table -->
+
     <script>
-      // Mengambil data dari localhost
-      fetch("http://localhost:3000/music")
-        .then((response) => response.json())
-        .then((data) => {
-          const musicTableBody = document.getElementById("music-table-body");
-          let count = 1;
+      document.addEventListener("DOMContentLoaded", function () {
+        const addSongModal = document.getElementById("addSongModal");
+        const form = addSongModal.querySelector("form");
+        const mp3FileInput = form.querySelector("#mp3File");
+        const imageFileInput = form.querySelector("#imageFile");
 
-          data.data.forEach((item) => {
-            const row = document.createElement("tr");
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
 
-            const noCell = document.createElement("td");
-            noCell.textContent = count++;
-            row.appendChild(noCell);
+          // Buat instance objek FormData
+          const formData = new FormData();
 
-            const packageNameCell = document.createElement("td");
-            const image = document.createElement("img");
-            image.src = `images/${item.image_url}`;
-            image.style.maxWidth = "100px";
-            image.style.maxHeight = "100px";
-            packageNameCell.appendChild(image);
-            packageNameCell.appendChild(document.createElement("br"));
-            packageNameCell.appendChild(
-              document.createTextNode(item.package_name)
-            );
-            row.appendChild(packageNameCell);
+          // Tambahkan data form ke dalam objek FormData
+          formData.append(
+            "package_name",
+            form.querySelector("#songTitle").value
+          );
+          formData.append("artist_name", form.querySelector("#artist").value);
+          formData.append("price", form.querySelector("#price").value);
+          formData.append(
+            "release_date",
+            form.querySelector("#releaseDate").value
+          );
 
-            const releaseDateCell = document.createElement("td");
-            const releaseDate = new Date(
-              item.release_date
-            ).toLocaleDateString();
-            releaseDateCell.textContent = releaseDate;
-            row.appendChild(releaseDateCell);
+          // Tambahkan file audio ke dalam objek FormData
+          formData.append("song", mp3FileInput.files[0]);
 
-            const audioCell = document.createElement("td");
-            const audio = document.createElement("audio");
-            audio.src = item.sample_url;
-            audio.controls = true;
-            audioCell.appendChild(audio);
-            row.appendChild(audioCell);
+          // Tambahkan file gambar ke dalam objek FormData
+          formData.append("image", imageFileInput.files[0]);
 
-            const priceCell = document.createElement("td");
-            priceCell.textContent = item.price;
-            row.appendChild(priceCell);
-
-            const actionCell = document.createElement("td");
-            const editButton = document.createElement("button");
-            editButton.textContent = "Edit";
-            editButton.addEventListener("click", () => {
-              showEditModal(item);
+          // Kirim data form, file gambar, dan file audio ke endpoint
+          fetch("http://localhost:3000/music/upload", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              // Lakukan tindakan setelah berhasil mengunggah
+              console.log("Upload berhasil:", data);
+              addSongModal.modal("hide");
+              form.reset();
+            })
+            .catch((error) => {
+              // Tangani kesalahan jika terjadi
+              console.error("Terjadi kesalahan:", error);
             });
-            const deleteButton = document.createElement("button");
-            deleteButton.textContent = "Delete";
-
-            actionCell.appendChild(editButton);
-
-            deleteButton.addEventListener("click", () => {
-              openConfirmModal(item.id);
-            });
-            actionCell.appendChild(deleteButton);
-            row.appendChild(actionCell);
-
-            musicTableBody.appendChild(row);
-          });
-        })
-        .catch((error) => {
-          console.error("Error:", error);
         });
+      });
+    </script>
 
-      function openConfirmModal(id) {
-        const confirmModal = document.getElementById("confirmModal");
-        const confirmDeleteButton = document.getElementById(
-          "confirmDeleteButton"
-        );
-        const cancelDeleteButton =
-          document.getElementById("cancelDeleteButton");
+    <div class="container">
+      <h1>Music Packages</h1>
+      <table class="table" id="musicTable">
+        <thead>
+          <tr>
+            <th scope="col">No</th>
+            <th scope="col">Package Name</th>
+            <th scope="col">Artist Name</th>
+            <th scope="col">Release Date</th>
+            <th scope="col">Audio</th>
+            <th scope="col">Price</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- <tr>
+            <th scope="row">1</th>
+            <td>
+              <h6>Package 1</h6>
+              <img src="path/to/image.jpg" alt="Package 1" width="50" />
+            </td>
+            <td>Song 1</td>
+            <td>Artist 1</td>
+            <td>2023-05-29</td>
+            <td><button class="btn btn-primary">Play</button></td>
+            <td>$9.99</td>
+            <td>
+              <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#editModal"
+              >
+                Edit
+              </button>
+              <button
+                class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteModal"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">1</th>
+            <td>
+              <h6>Package 1</h6>
+              <img src="path/to/image.jpg" alt="Package 1" width="50" />
+            </td>
+            <td>Song 1</td>
+            <td>Artist 1</td>
+            <td>2023-05-29</td>
+            <td><button class="btn btn-primary">Play</button></td>
+            <td>$9.99</td>
+            <td>
+              <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#editModal"
+              >
+                Edit
+              </button>
+              <button
+                class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteModal"
+              >
+                Delete
+              </button>
+            </td>
+          </tr> -->
+          <!-- Tambahkan baris lain sesuai kebutuhan Anda -->
+        </tbody>
+      </table>
+    </div>
 
-        confirmDeleteButton.addEventListener("click", () => {
-          deleteMusic(id);
-          confirmModal.style.display = "none";
-        });
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="editModal"
+      tabindex="-1"
+      aria-labelledby="editModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editModalLabel">Edit Song</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="editSongTitle" class="form-label">Title</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editSongTitle"
+                  placeholder="Enter song title"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="editArtist" class="form-label">Artist</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editArtist"
+                  placeholder="Enter artist name"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="editPrice" class="form-label">Price</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editPrice"
+                  placeholder="Enter price"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="editReleaseDate" class="form-label"
+                  >Release Date</label
+                >
+                <input type="date" class="form-control" id="editReleaseDate" />
+              </div>
+              <div class="mb-3">
+                <label for="editMP3File" class="form-label"
+                  >Upload MP3 File</label
+                >
+                <input type="file" class="form-control" id="editMP3File" />
+              </div>
+              <div class="mb-3">
+                <label for="editImageFile" class="form-label"
+                  >Upload Image</label
+                >
+                <input type="file" class="form-control" id="editImageFile" />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script></script>
+    <!-- Modal Delete -->
+    <div
+      class="modal fade"
+      id="deleteModal"
+      tabindex="-1"
+      aria-labelledby="deleteModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Delete Song</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete this song?</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              No
+            </button>
+            <button type="button" class="btn btn-danger">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        cancelDeleteButton.addEventListener("click", () => {
-          confirmModal.style.display = "none";
-        });
-
-        confirmModal.style.display = "block";
+    <!-- Mengimpor file JavaScript Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      var audio;
+      var playBtn;
+      var stopBtn;
+      function formatDate(dateString) {
+        const options = { year: "numeric", month: "short", day: "numeric" };
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-US", options);
       }
-      function deleteMusic(id) {
-        console.log("Deleting music with ID:", id);
-        fetch(`http://localhost:3000/music/${id}`, {
-          method: "DELETE",
-        })
-          .then((response) => {
-            if (response.ok) {
-              console.log("Music deleted successfully");
-              // Refresh the page or update the table as needed
-              window.location.reload();
-            } else {
-              console.error("Failed to delete music");
-            }
+      document.addEventListener("DOMContentLoaded", function () {
+        fetch("http://localhost:3000/music")
+          .then((response) => response.json())
+          .then((data) => {
+            const tableBody = document.querySelector("#musicTable tbody");
+
+            data.data.forEach((music, index) => {
+              const row = document.createElement("tr");
+
+              row.innerHTML = `
+          <th scope="row">${index + 1}</th>
+          <td>
+            <h6>${music.package_name}</h6>
+            <img src="images/${music.image_url}" alt="${
+                music.package_name
+              }" width="50" />
+          </td>
+          <td>${music.artist_name}</td>
+          <td>${formatDate(music.release_date)}</td>
+          <td>
+            <audio class="audio-element" src=""></audio>
+            <button class="btn btn-primary play-btn" data-audio-url="${
+              music.sample_url
+            }">Play</button>
+            <button class="btn btn-primary stop-btn" style="display: none;">Stop</button>
+          </td>
+          <td>${music.price !== null ? music.price : ""}</td>
+          <td>
+            <button class="btn btn-primary edit-btn" data-bs-toggle="modal" data-bs-target="#editModal" data-music-id="${
+              music.id
+            }">Edit</button>
+            <button class="btn btn-danger delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-music-id="${
+              music.id
+            }">Delete</button>
+          </td>
+        `;
+
+              tableBody.appendChild(row);
+            });
+
+            initializeAudio();
+            initializeEditButtons();
+            initializeDeleteButtons();
           })
           .catch((error) => {
-            console.error("Error:", error);
+            console.log("Error:", error);
           });
-      }
-      const editModal = document.getElementById("edit-modal");
-      const editForm = document.getElementById("edit-form");
-      const editPackageNameInput = document.getElementById("edit-package-name");
-      const editArtistNameInput = document.getElementById("edit-artist_name");
-      const editReleaseDateInput = document.getElementById("edit-release-date");
-      const editPriceInput = document.getElementById("edit-price");
-      const editSubmitButton = document.getElementById("edit-submit-button");
 
-      function showEditModal(item) {
-        editItemId = item.id;
-        editPackageNameInput.value = item.package_name;
-        editArtistNameInput.value = item.artist_name;
-        editPriceInput.value = item.price;
-        editReleaseDateInput.value = new Date(
-          item.release_date
-        ).toLocaleDateString();
-        editModal.style.display = "block";
-      }
+        function initializeEditButtons() {
+          const editButtons = document.querySelectorAll(".edit-btn");
+          editButtons.forEach((button) => {
+            button.addEventListener("click", (event) => {
+              const musicId = event.target.getAttribute("data-music-id");
+              populateEditModal(musicId);
+            });
+          });
+        }
 
-      editSubmitButton.addEventListener("click", () => {
-        const updatedData = {
-          package_name: editPackageNameInput.value,
-          artist_name: editArtistNameInput.value,
-          release_date: editReleaseDateInput.value,
-          price: editPriceInput.value,
-        };
-        editMusic(editItemId, updatedData);
-      });
+        function initializeDeleteButtons() {
+          const deleteButtons = document.querySelectorAll(".delete-btn");
+          const deleteModalYesButton = document.querySelector(
+            "#deleteModal .modal-footer .btn-danger"
+          );
 
-      function editMusic(id, data) {
-        console.log("Editing music with ID:", id);
-        console.log(data);
-        fetch(`http://localhost:3000/music/${id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => {
-            if (response.ok) {
-              console.log("Music updated successfully");
-              editModal.style.display = "none";
-              window.location.reload();
-            } else {
-              console.error("Failed to update music");
-            }
+          deleteButtons.forEach((button) => {
+            button.addEventListener("click", function () {
+              const musicId = this.dataset.musicId;
+
+              deleteModalYesButton.addEventListener("click", function () {
+                deleteMusic(musicId);
+              });
+            });
+          });
+        }
+
+        function deleteMusic(musicId) {
+          fetch(`http://localhost:3000/music/${musicId}`, {
+            method: "DELETE",
           })
-          .catch((error) => {
-            console.error("Error:", error);
+            .then((response) => response.json())
+            .then((data) => {
+              console.log("Delete successful:", data);
+              // Handle successful delete, e.g., remove row from table or display success message
+              window.location.reload();
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              // Handle error, e.g., display error message
+            });
+        }
+        function populateEditModal(musicId) {
+          const editModalTitle = document.querySelector("#editModalLabel");
+          const editSongTitle = document.querySelector("#editSongTitle");
+          const editArtist = document.querySelector("#editArtist");
+          const editReleaseDate = document.querySelector("#editReleaseDate");
+
+          // Fetch data for the specified music ID
+          fetch(`http://localhost:3000/music/${musicId}`)
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data);
+              const music = data.data[0];
+
+              // Set the values in the edit modal
+              // editModalTitle.textContent = `Edit Song: ${music.id}`;
+              editSongTitle.value = music.package_name;
+              editArtist.value = music.artist_name;
+              editPrice.value = music.price;
+              editReleaseDate.value = music.release_date;
+              const form = document.querySelector("#editModal form");
+              const mp3FileInput = form.querySelector("#editMP3File");
+              const imageFileInput = form.querySelector("#editImageFile");
+
+              const editSong = document.getElementById("editModal");
+              form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                // Buat instance objek FormData
+                const formData = new FormData();
+
+                // Tambahkan data form ke dalam objek FormData
+                formData.append(
+                  "package_name",
+                  form.querySelector("#editSongTitle").value
+                );
+                formData.append(
+                  "artist_name",
+                  form.querySelector("#editArtist").value
+                );
+                formData.append(
+                  "price",
+                  form.querySelector("#editPrice").value
+                );
+                formData.append(
+                  "release_date",
+                  form.querySelector("#editReleaseDate").value
+                );
+
+                // Tambahkan file audio ke dalam objek FormData
+                formData.append("song", mp3FileInput.files[0]);
+
+                // Tambahkan file gambar ke dalam objek FormData
+                formData.append("image", imageFileInput.files[0]);
+
+                // Kirim data form, file gambar, dan file audio ke endpoint
+                fetch(`http://localhost:3000/music/${musicId}`, {
+                  method: "PATCH",
+                  body: formData,
+                })
+                  .then((response) => response.json())
+                  .then((data) => {
+                    // Lakukan tindakan setelah berhasil mengunggah
+                    console.log("Upload berhasil:", data);
+                    window.location.reload();
+                  })
+                  .catch((error) => {
+                    // Tangani kesalahan jika terjadi
+                    console.error("Terjadi kesalahan:", error);
+                  });
+              });
+            })
+            .catch((error) => {
+              console.log("Error:", error);
+            });
+        }
+      });
+
+      function initializeAudio() {
+        audio = document.getElementsByClassName("audio-element");
+        playBtn = document.querySelectorAll(".play-btn");
+        stopBtn = document.querySelectorAll(".stop-btn");
+
+        playBtn.forEach((btn, index) => {
+          btn.addEventListener("click", function () {
+            playAudio(index);
           });
+        });
+
+        stopBtn.forEach((btn, index) => {
+          btn.addEventListener("click", function () {
+            stopAudio(index);
+          });
+        });
       }
 
-      cancelEditButton.addEventListener("click", () => {
-        editModal.style.display = "none";
-      });
+      function playAudio(index) {
+        // Menghentikan audio yang sedang diputar
+        stopAllAudio();
+
+        audio[index].src = playBtn[index].getAttribute("data-audio-url");
+        audio[index].play();
+
+        playBtn[index].style.display = "none";
+        stopBtn[index].style.display = "inline-block";
+      }
+
+      function stopAudio(index) {
+        audio[index].pause();
+        audio[index].currentTime = 0;
+
+        stopBtn[index].style.display = "none";
+        playBtn[index].style.display = "inline-block";
+      }
+
+      function stopAllAudio() {
+        for (var i = 0; i < audio.length; i++) {
+          audio[i].pause();
+          audio[i].currentTime = 0;
+          stopBtn[i].style.display = "none";
+          playBtn[i].style.display = "inline-block";
+        }
+      }
     </script>
   </body>
 </html>

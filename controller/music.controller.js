@@ -1,4 +1,4 @@
-const { parse, format } = require("date-fns");
+const { parseISO } = require("date-fns");
 const musicModels = require("../model/music.model");
 
 module.exports = {
@@ -15,13 +15,13 @@ module.exports = {
   uploadMusic: async (req, res) => {
     try {
       const { body } = req;
-      const parsedDate = parse(body.release_date, "dd MMMM yyyy", new Date());
-      const release_date = format(parsedDate, "yyyy-MM-dd");
+      console.log(body.release_date);
+      const date = parseISO(body.release_date);
 
       const data = {
         package_name: body.package_name,
         artist_name: body.artist_name,
-        release_date: release_date,
+        release_date: date,
         sample_url: req.files.song[0].path,
         price: body.price,
       };
